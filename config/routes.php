@@ -23,6 +23,8 @@
 
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
+use Cake\Routing\Router;
+
 
 /*
  * The default class to use for all routes
@@ -43,6 +45,12 @@ use Cake\Routing\RouteBuilder;
  */
 /** @var \Cake\Routing\RouteBuilder $routes */
 $routes->setRouteClass(DashedRoute::class);
+
+$routes->scope('/bookmarks', ['controller' => 'Bookmarks'],
+    function ($routes){
+        $routes->connect('/tagged/*', ['action' => 'tags']);
+    }
+);
 
 $routes->scope('/', function (RouteBuilder $builder) {
     /*

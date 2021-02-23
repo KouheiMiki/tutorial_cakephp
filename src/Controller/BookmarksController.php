@@ -109,4 +109,20 @@ class BookmarksController extends AppController
 
         return $this->redirect(['action' => 'index']);
     }
+
+    public function tags(){
+        // passキーは全てのリクエストに渡されたURLのパスセグメント
+        $tags = $this->request->getParam('pass');
+
+        // tag付きのブックマークを探すためにbookmarksTableへfind
+        $bookmarks = $this->Bookmarks->find('tagged',[
+            'tags' => $tags
+        ]);
+
+        // ビューテンプレートに変数を渡す
+        $this->set([
+            'bookmarks' => $bookmarks,
+            'tags' => $tags
+        ]);
+    }
 }
