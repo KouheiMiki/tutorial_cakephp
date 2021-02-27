@@ -43,6 +43,21 @@ class AppController extends Controller
 
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
+        $this->loadComponent('Auth', [
+            'authenticate' => [
+                'Form' => [
+                    'fields' => [
+                        'username' => 'email',
+                        'password' => 'password',
+                    ]
+                ]
+            ],
+            'loginAction' => [
+                'controller' => 'Users',
+                'action' => 'login',
+            ],
+            'unauthorizedRedirect' => $this->referer() // 未承認時、元のページを返します
+        ]);
 
         /*
          * Enable the following component for recommended CakePHP form protection settings.
