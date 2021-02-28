@@ -44,6 +44,7 @@ class AppController extends Controller
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
         $this->loadComponent('Auth', [
+            'authorize' => 'Controller',
             'authenticate' => [
                 'Form' => [
                     'fields' => [
@@ -59,10 +60,17 @@ class AppController extends Controller
             'unauthorizedRedirect' => $this->referer() // 未承認時、元のページを返します
         ]);
 
+        // PagesControllerが動作し続けるようdisplayアクションを許可
+        $this->Auth->allow(['display']);
         /*
          * Enable the following component for recommended CakePHP form protection settings.
          * see https://book.cakephp.org/4/en/controllers/components/form-protection.html
          */
         //$this->loadComponent('FormProtection');
+    }
+
+    public function isAuthorized($user){
+        $this->Flash->error(__('権限がありません'));
+        return false;
     }
 }

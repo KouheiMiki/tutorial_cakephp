@@ -11,6 +11,27 @@ namespace App\Controller;
  */
 class BookmarksController extends AppController
 {
+    public function isAuthorized($user){
+        $action = $this->request->getParam('action');
+
+        // addとindexアクションは常に許可する
+        if (in_array($action, ['index', 'add', 'tags'])){
+            return true;
+        }
+        // その他の全てのアクションは、idを必要とする
+        if (!$this->request->getParam('pass.0')){
+            return false;
+        }
+
+        // ブックマークが現在のユーザーに属するかチェック
+        $id = $this->request->getParam('pass.0');
+        $bookmark = $this->Bookmarks->get($id);
+        if($bookmark->user_id == $user['id']) {
+            return true;
+        }
+        return parent::isAuthorized($user);
+    }
+
     /**
      * Index method
      *
@@ -19,11 +40,12 @@ class BookmarksController extends AppController
     public function index()
     {
         $this->paginate = [
-            'contain' => ['Users'],
+            'conditions' => [
+                'Bookmarks.user_id' => $this->Auth->user('id'),
+            ],
         ];
-        $bookmarks = $this->paginate($this->Bookmarks);
-
-        $this->set(compact('bookmarks'));
+        $this->set('bookmarks', $this->paginate($this->Bookmarks));
+        $this->set('_serialize', ['bookmarks']);
     }
 
     /**
@@ -52,16 +74,17 @@ class BookmarksController extends AppController
         $bookmark = $this->Bookmarks->newEmptyEntity();
         if ($this->request->is('post')) {
             $bookmark = $this->Bookmarks->patchEntity($bookmark, $this->request->getData());
+            $bookmark->user_id = $this->Auth->user('id');
             if ($this->Bookmarks->save($bookmark)) {
-                $this->Flash->success(__('The bookmark has been saved.'));
-
+                $this->Flash->success(__('ブックマークを保存しました'));
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The bookmark could not be saved. Please, try again.'));
+            $this->Flash->error(__('ブックマークは保存できませんでした。もう一度お試しください。'));
         }
         $users = $this->Bookmarks->Users->find('list', ['limit' => 200]);
         $tags = $this->Bookmarks->Tags->find('list', ['limit' => 200]);
         $this->set(compact('bookmark', 'users', 'tags'));
+        $this->set('_serialize', ['bookmark']);
     }
 
     /**
@@ -78,16 +101,16 @@ class BookmarksController extends AppController
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $bookmark = $this->Bookmarks->patchEntity($bookmark, $this->request->getData());
+            $bookmark->user_id = $this->Auth->user('id');
             if ($this->Bookmarks->save($bookmark)) {
-                $this->Flash->success(__('The bookmark has been saved.'));
-
+                $this->Flash->success(__('ブックマークを保存しました。'));
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The bookmark could not be saved. Please, try again.'));
+            $this->Flash->error(__('ブックマークは保存できませんでした。もう一度お試しください。'));
         }
-        $users = $this->Bookmarks->Users->find('list', ['limit' => 200]);
         $tags = $this->Bookmarks->Tags->find('list', ['limit' => 200]);
-        $this->set(compact('bookmark', 'users', 'tags'));
+        $this->set(compact('bookmark', 'tags'));
+        $this->set('_serialize', ['bookmark']);
     }
 
     /**

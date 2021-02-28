@@ -118,4 +118,39 @@ class BookmarksTable extends Table
 
         return $bookmarks->group(['Bookmarks.id']);
     }
+
+    public function beforeSave($event, $entity, $options){
+        if ($entity->tag_string){
+            $entity->tags = $this->_buildTags($entity->tag_string);
+        }
+    }
+
+    protected function _buildTag($tagString){
+        // タグにtrim適用
+        $newTags = array_map('trim', explode(',', $tagString));
+        // 全てのからのタグを削除
+        $newTags = array_filter($newTags);
+        // 重複するタグの削減
+        $newTags = array_unique($newTags);
+
+        $out = [];
+        $query = $this->Tags->find()->where(['Tags.title IN' => $newTags]);
+
+        // 新しいタグの一覧から既存のタグを削除
+        foreach ($query->extract('title') as $existing){
+            $index = array_search($existing, $newTags);
+            if ($index !== false) {
+                unset($newTags[$index]);
+            }
+        }
+        // 既存のタグの追加
+        foreach ($query as $tag) {
+            $out[] = $tag;
+        }
+        // 新しいタグの追加
+        foreach ($newTags as $tag) {
+            $out[] = $this->Tags->newEntity(['title' => $tag]);
+        }
+        return $out;
+    }
 }
