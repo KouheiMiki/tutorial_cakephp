@@ -20,6 +20,7 @@ class BookmarksController extends AppController
         }
         // その他の全てのアクションは、idを必要とする
         if (!$this->request->getParam('pass.0')){
+            $this->Flash->error(__('権限がありません'));
             return false;
         }
 

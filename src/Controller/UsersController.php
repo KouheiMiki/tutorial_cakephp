@@ -115,12 +115,12 @@ class UsersController extends AppController
                 $this->Auth->setUser($user);
                 return $this->redirect($this->Auth->redirectUrl());
             }
-            $this->Flash->error('あなたのユーザー名またはパスワードは不正です。');
+            $this->Flash->error(__('あなたのユーザー名またはパスワードは不正です。'));
         }
     }
 
     public function logout() {
-        $this->Flash->success('ログアウトしました');
+        $this->Flash->success(__('ログアウトしました'));
         return $this->redirect($this->Auth->logout());
     }
 }
